@@ -12,7 +12,7 @@ import random
 from torch.utils.data import Sampler
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
-from utils.data.custom_finetune_dataset import CustomFinetuneDataset
+from py.utils.data.custom_finetune_dataset import CustomFinetuneDataset
 
 
 class CustomBatchSampler(Sampler):
@@ -55,8 +55,8 @@ class CustomBatchSampler(Sampler):
         return self.num_iter
 
 
-def test():
-    root_dir = '../../data/finetune_car/train'
+def jiao():
+    root_dir = '../../data/classifier_car/train'
     train_data_set = CustomFinetuneDataset(root_dir)
     train_sampler = CustomBatchSampler(train_data_set.get_positive_num(), train_data_set.get_negative_num(), 32, 96)
 
@@ -69,8 +69,8 @@ def test():
     print('positive batch: %d' % np.sum(np.array(first_idx_list) < 66517))
 
 
-def test2():
-    root_dir = '../../data/finetune_car/train'
+def jiao2():
+    root_dir = '../../data/classifier_car/train'
     transform = transforms.Compose([
         transforms.ToPILImage(),
         transforms.Resize((227, 227)),
@@ -88,4 +88,4 @@ def test2():
 
 
 if __name__ == '__main__':
-    test()
+    jiao()

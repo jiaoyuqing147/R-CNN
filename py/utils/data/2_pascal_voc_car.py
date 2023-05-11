@@ -6,44 +6,48 @@
 @author: zj
 @description: 从PASCAL VOC 2007数据集中抽取类别Car。保留1/10的数目
 """
-
 import os
+import sys
 import shutil
 import random
 import numpy as np
 import xmltodict
-import sys
-import os
-from utils.util import check_dir
+
+
+
+'''
+#这个导入语句的含义是：“从当前包的父级包中导入 module1 模块”。这个运行也会出错，弃用
+from ...utils.util import check_dir
+'''
+
+from py.utils.util import check_dir
+#作者给的原导入方式不行
+# from utils.util import check_dir
 
 suffix_xml = '.xml'
 suffix_jpeg = '.jpg'
-
 car_train_path = '../../data/VOCdevkit/VOC2007/ImageSets/Main/car_train.txt'
 car_val_path = '../../data/VOCdevkit/VOC2007/ImageSets/Main/car_val.txt'
-
 voc_annotation_dir = '../../data/VOCdevkit/VOC2007/Annotations/'
 voc_jpeg_dir = '../../data/VOCdevkit/VOC2007/JPEGImages/'
-
 car_root_dir = '../../data/voc_car/'
-
 
 def parse_train_val(data_path):
     """
-    提取指定类别图像
+    解析的最终目的：把所有正样本的图像的编号，都存入samples列表中
     """
     samples = []
-
     with open(data_path, 'r') as file:
         lines = file.readlines()
         for line in lines:
             res = line.strip().split(' ')
+            # 如果是正样本如'000012  1'可以拆分成['000012', '', '1']
             if len(res) == 3 and int(res[2]) == 1:
                 samples.append(res[0])
 
-    return np.array(samples)
+    return np.array(samples)#返回的是正样本的合集
 
-
+#随机采样样本，减少数据集个数（留下1/10）下面
 def sample_train_val(samples):
     """
     随机采样样本，减少数据集个数（留下1/10）
@@ -51,7 +55,10 @@ def sample_train_val(samples):
     for name in ['train', 'val']:
         dataset = samples[name]
         length = len(dataset)
-
+        '''
+        这行代码使用“random.sample()”函数生成一个随机整数列表，范围为0到“length-1”。
+        该函数的第二个参数指定要生成的随机整数数量，在此代码中为“int(length / 10)”（即原数据集的10%）
+        '''
         random_samples = random.sample(range(length), int(length / 10))
         # print(random_samples)
         new_dataset = dataset[random_samples]
@@ -109,11 +116,27 @@ def save_car(car_samples, data_root_dir, data_annotation_dir, data_jpeg_dir):
 
 
 if __name__ == '__main__':
+    '''
+    下面一行代码把car_train_path训练数据集中的正样本和’train‘对应，
+    把car_val_path验证数据集中的正样本和’val‘对应
+    '''
+    #parse_train_val此函数作用在于把所有正样本存到一个列表中，train包含的是训练样本数据的
     samples = {'train': parse_train_val(car_train_path), 'val': parse_train_val(car_val_path)}
     print(samples)
-    # samples = sample_train_val(samples)
+    print('train\'s lengh',len(samples['train']))#376条数据，训练
+    print('val\'s lengh', len(samples['val']))#377条数据，验证
+
+    '''
+    
+    '''
+
+    # samples = sample_train_val(samples)#通过sample_train_val(samples)函数，样本规模已缩小为原1/10
+    # print('after,train\'s lengh',len(samples['train']))
+    # print('after,val\'s lengh', len(samples['val']))
     # print(samples)
 
+
+#把samples数据全部存入到新的文件夹中，方便后续处理。
     check_dir(car_root_dir)
     for name in ['train', 'val']:
         data_root_dir = os.path.join(car_root_dir, name)

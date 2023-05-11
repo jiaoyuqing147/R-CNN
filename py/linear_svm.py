@@ -11,7 +11,6 @@ import time
 import copy
 import os
 import random
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -19,11 +18,10 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from torchvision.models import alexnet
 
-from utils.data.custom_classifier_dataset import CustomClassifierDataset
-from utils.data.custom_hard_negative_mining_dataset import CustomHardNegativeMiningDataset
-from utils.data.custom_batch_sampler import CustomBatchSampler
-from utils.util import check_dir
-from utils.util import save_model
+from py.utils import CustomClassifierDataset
+from py.utils import CustomHardNegativeMiningDataset
+from py.utils import CustomBatchSampler
+from py.utils import save_model
 
 batch_positive = 32
 batch_negative = 96

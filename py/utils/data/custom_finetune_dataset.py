@@ -6,8 +6,8 @@
 @author: zj
 @description: 自定义微调数据类
 """
-
-import numpy  as np
+import py
+import numpy as np
 import os
 import cv2
 from PIL import Image
@@ -15,12 +15,12 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 
-from utils.util import parse_car_csv
+from py.utils.util import parse_car_csv
 
 
 class CustomFinetuneDataset(Dataset):
 
-    def __init__(self, root_dir, transform=None):
+    def __init__(self, root_dir, transform=None):#transform表示要应用的数据增强的方法
         samples = parse_car_csv(root_dir)
 
         jpeg_images = [cv2.imread(os.path.join(root_dir, 'JPEGImages', sample_name + ".jpg"))
@@ -38,21 +38,27 @@ class CustomFinetuneDataset(Dataset):
         positive_rects = list()
         negative_rects = list()
 
-        for annotation_path in positive_annotations:
-            rects = np.loadtxt(annotation_path, dtype=np.int, delimiter=' ')
+#遍历所有正样本的标注文件，并使用 NumPy 库中的 np.loadtxt 函数加载每个标注文件中的边界框信息。
+#根据边界框的数量和维度，将边界框的大小和坐标信息存储在 positive_sizes 和 positive_rects 列表中，
+#分别记录正样本的数量和所有正样本中边界框的数量。
+#最后，打印出正样本的数量和所有正样本中边界框的数量。
+        for annotation_path in positive_annotations:#挨个读csv文件
+            rects = np.loadtxt(annotation_path, dtype=int, delimiter=' ')
             # 存在文件为空或者文件中仅有单行数据
-            if len(rects.shape) == 1:
+            if len(rects.shape) == 1:#单行说明其只有一行数据，例如000083_1.csv文件里109 33 447 309
                 # 是否为单行
-                if rects.shape[0] == 4:
-                    positive_rects.append(rects)
-                    positive_sizes.append(1)
+                if rects.shape[0] == 4:#只有一列数据，那么其shape[0]这里基本都是4，没有shape[1]
+                    positive_rects.append(rects)#rects是个列表[109 33 447 309],被加入positive_rects列表作为一个元素
+                    positive_sizes.append(1)#把数字1加入positive_sizes列表
                 else:
                     positive_sizes.append(0)
             else:
-                positive_rects.extend(rects)
-                positive_sizes.append(len(rects))
+                positive_rects.extend(rects)#例如000091_1.csv文件里有三行数据，shape是3，4,三行数据都被加入列表positive_rects
+                positive_sizes.append(len(rects))#数字3加入positive_sizes列表中
+        #print("训练集 正向框体个数{} 正向框体对应的图像汇总个数{}".format(len(positive_rects), len(positive_sizes)))#如果在train文件夹中处理，则打印验证集的汇总数
+        #print("验证集 正向框体个数{} 正向框体对应的图像汇总个数{}".format(len(positive_rects), len(positive_sizes)))#如果在val文件夹中处理，则打印验证集的汇总数
         for annotation_path in negative_annotations:
-            rects = np.loadtxt(annotation_path, dtype=np.int, delimiter=' ')
+            rects = np.loadtxt(annotation_path, dtype=int, delimiter=' ')
             # 和正样本规则一样
             if len(rects.shape) == 1:
                 if rects.shape[0] == 4:
@@ -63,7 +69,8 @@ class CustomFinetuneDataset(Dataset):
             else:
                 negative_rects.extend(rects)
                 negative_sizes.append(len(rects))
-
+        #print("训练集 负向框体个数{} 负向框体对应图像汇总个数{}".format(len(negative_rects), len(negative_sizes)))#如果在train文件夹中处理，打印的是训练数据集合
+        #print("验证集 负向框体个数{} 负向框体对应图像汇总个数{}".format(len(negative_rects), len(negative_sizes)))#如果在val文件夹中处理，打印的是验证集数据
         self.transform = transform
         self.jpeg_images = jpeg_images
         self.positive_sizes = positive_sizes
@@ -73,6 +80,12 @@ class CustomFinetuneDataset(Dataset):
         self.total_positive_num = int(np.sum(positive_sizes))
         self.total_negative_num = int(np.sum(negative_sizes))
 
+    # __getitem__是Python中的一个特殊方法，用于定义类对象的索引操作，即通过类对象的下标符号[]
+    # 获取元素。在数据集类中，该方法通常用于实现数据的加载和预处理。
+    # 训练集正向框体个数625正向框体汇总总数376
+    # 训练集负向框体个数358281负向框体汇总总数376
+    # 验证集正向框体个数625正向框体汇总总数337
+    # 验证集负向框体个数315323 负向框体汇总总数337
     def __getitem__(self, index: int):
         # 定位下标所属图像
         image_id = len(self.jpeg_images) - 1
@@ -115,8 +128,8 @@ class CustomFinetuneDataset(Dataset):
         return self.total_negative_num
 
 
-def test(idx):
-    root_dir = '../../data/finetune_car/train'
+def jiao1(idx):
+    root_dir = '../../data/classifier_car/val'
     train_data_set = CustomFinetuneDataset(root_dir)
 
     print('positive num: %d' % train_data_set.get_positive_num())
@@ -135,8 +148,8 @@ def test(idx):
     # cv2.waitKey(0)
 
 
-def test2():
-    root_dir = '../../data/finetune_car/train'
+def jiao2():
+    root_dir = '../../data/classifier_car/train'
     transform = transforms.Compose([
         transforms.ToPILImage(),
         transforms.Resize((227, 227)),
@@ -150,8 +163,8 @@ def test2():
     print('image.shape: ' + str(image.shape))
 
 
-def test3():
-    root_dir = '../../data/finetune_car/train'
+def jiao3():
+    root_dir = '../../data/classifier_car/train'
     transform = transforms.Compose([
         transforms.ToPILImage(),
         transforms.Resize((227, 227)),
@@ -170,4 +183,4 @@ def test3():
 if __name__ == '__main__':
     # test(159622)
     # test(4051)
-    test(24768)
+    jiao1(24768)

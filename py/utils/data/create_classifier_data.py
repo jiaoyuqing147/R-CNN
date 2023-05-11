@@ -14,12 +14,13 @@ import time
 import cv2
 import os
 import xmltodict
-import selectivesearch
-from utils.util import check_dir
-from utils.util import parse_car_csv
-from utils.util import parse_xml
-from utils.util import iou
-from utils.util import compute_ious
+import  py.selectivesearch
+from py import selectivesearch
+from py.utils.util import check_dir
+from py.utils.util import parse_car_csv
+from py.utils.util import parse_xml
+from py.utils.util import iou
+from py.utils.util import compute_ious
 
 # train
 # positive num: 625
@@ -32,7 +33,7 @@ def parse_annotation_jpeg(annotation_path, jpeg_path, gs):
     """
     获取正负样本（注：忽略属性difficult为True的标注边界框）
     正样本：标注边界框
-    负样本：IoU大于0，小于等于0.3。为了进一步限制负样本数目，其大小必须大于标注框的1/5
+    负样本：IoU大于0，小于等于0.3。为了进一步限制负样本数目，其大小必须大于标注框的1/5,否则需要计算的框太多了
     """
     img = cv2.imread(jpeg_path)
 
@@ -72,7 +73,7 @@ def parse_annotation_jpeg(annotation_path, jpeg_path, gs):
 if __name__ == '__main__':
     car_root_dir = '../../data/voc_car/'
     classifier_root_dir = '../../data/classifier_car/'
-    check_dir(classifier_root_dir)
+    check_dir(classifier_root_dir)#检查目录是否存在，不存在就创建目录
 
     gs = selectivesearch.get_selective_search()
     for name in ['train', 'val']:

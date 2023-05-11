@@ -7,8 +7,6 @@
 @description: 边界框回归训练
 """
 
-import os
-import copy
 import time
 import torch
 import torch.nn as nn
@@ -17,8 +15,8 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from torchvision.models import AlexNet
 
-from utils.data.custom_bbox_regression_dataset import BBoxRegressionDataset
-import utils.util as util
+from py.utils import BBoxRegressionDataset
+from py import utils as util
 
 
 def load_data(data_root_dir):

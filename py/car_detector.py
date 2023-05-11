@@ -17,7 +17,7 @@ from torchvision.models import alexnet
 import torchvision.transforms as transforms
 import selectivesearch
 
-import utils.util as util
+from py import utils as util
 
 
 def get_device():
